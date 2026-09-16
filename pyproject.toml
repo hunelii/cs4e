@@ -1,0 +1,39 @@
+[project]
+name = "factoryflow"
+version = "0.1.0"
+description = "OEE reporting for production line A"
+requires-python = ">=3.12"
+
+# TODO(S1.5): the project does not declare a single dependency yet, which is
+# exactly why it will not run on your partner's laptop.
+#
+# Add what this code actually imports -- and nothing it does not. Every entry
+# here is something a colleague has to install, trust and keep updated, so you
+# should be able to justify each one to a sceptical supervisor.
+#
+# Add them with `uv add <package>` and let it edit this list for you: that way
+# uv.lock is written at the same time, and the lock file is what actually makes
+# the environment reproducible.
+dependencies = [
+    "pandas>=2.3.3",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/factoryflow"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[dependency-groups]
+dev = [
+    "pytest>=9.1.1",
+    "ruff>=0.16.7",
+]
