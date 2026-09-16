@@ -209,6 +209,12 @@ def resample_readings(clean_df: pd.DataFrame, freq: str = config.DEFAULT_FREQ) -
 
     # Group by two things at once: the machine, and the time bucket. pd.Grouper
     # only works on the index, which is why the timestamp is moved there first.
+    readings["run_minutes"] = (
+    readings["machine_state"].eq(config.PRODUCING_STATE).astype("int64")
+    )
+    readings["planned_minutes"] = (
+    readings["machine_state"].isin(config.PLANNED_STATES).astype("int64")
+    )
     buckets = (
         readings.set_index("timestamp")
         .sort_index()
@@ -315,7 +321,23 @@ def kpi_table(
     good_units = table["units_produced"] - table["units_rejected"]
 
     # TODO(L1): the 4 metric columns; guard each division with .where(denom > 0)
+    table["availability"] = (
+    table["run_minutes"] / table["planned_minutes"]
+    ).where(table["planned_minutes"] > 0)
 
+    table["performance"] = (
+        ideal_cycle_time_s * table["units_produced"] / run_seconds
+    ).where(table["run_minutes"] > 0)
+
+    table["quality"] = (
+        good_units / table["units_produced"]
+    ).where(table["units_produced"] > 0)
+
+    table["oee"] = (
+        table["availability"]
+        * table["performance"]
+        * table["quality"]
+    )
     return table[
         [
             "machine_id",

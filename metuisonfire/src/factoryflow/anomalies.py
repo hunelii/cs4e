@@ -140,10 +140,11 @@ def stuck_sensor(series: pd.Series, window: int = config.STUCK_WINDOW) -> pd.Ser
     # STUCK AFTER 15 MINUTES?
     #   in the course folder:  git checkout end/s2-2
     #   then copy src/factoryflow/anomalies.py over yours, and commit it.
+
     rolling = series.rolling(window=window, min_periods=window)
-    # TODO(L1): unchanged = (rolling max - rolling min) against a tiny tolerance
-    # "not enough history yet" is not a claim that the sensor was fine, but it
-    # is not a flag either.
+
+    unchanged = (rolling.max() - rolling.min()).abs() < 1e-9
+
     return unchanged.fillna(False)
 
 

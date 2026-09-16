@@ -96,13 +96,26 @@ def load_readings(path: Path | str | None = None) -> pd.DataFrame:
         )
 
     # TODO(L1): read the CSV into a frame called `readings`
+    readings = pd.read_csv(path)
 
     missing = [column for column in RAW_COLUMNS if column not in readings.columns]
     if missing:
         raise ValueError(f"{path.name} is missing column(s): {', '.join(missing)}")
 
     # TODO(L1): pd.to_datetime the timestamp, pd.to_numeric the 4 number columns
+    readings["timestamp"] = pd.to_datetime(
+    readings["timestamp"], errors="coerce"
+    )
 
+    for column in (
+        "units_produced",
+        "units_rejected",
+        "vibration_mm_s",
+        "power_kw",
+        ):
+        readings[column] = pd.to_numeric(
+            readings[column], errors="coerce"
+        )
     # temperature_c is deliberately left alone. It arrives as strings because
     # some rows use a decimal comma, and deciding what to do about that is a
     # cleaning decision, not a loading one.

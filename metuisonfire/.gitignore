@@ -1,0 +1,6 @@
+
+# Local/generated files
+.DS_Store
+__pycache__/
+*.py[cod]
+data/raw/*.csv
