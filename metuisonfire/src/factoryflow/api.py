@@ -140,14 +140,17 @@ def health() -> Health:
     `rows_loaded == 0` means the process started but never found the export --
     which looks identical to a healthy service until someone asks for a number.
     """
-    # TODO(L1): CORE 1 -- return Health(status=..., rows_loaded=len(_readings))
+    return Health(status="ok", rows_loaded=len(_readings))
 
 
 @app.get("/machines", response_model=list[Machine], summary="Machines on the line")
 def machines() -> list[Machine]:
     """List the machines present in the loaded data."""
-    # TODO(L1): CORE 2 -- drop_duplicates on machine_id/line_id, one Machine per row
-
+    rows = _readings[["machine_id", "line_id"]].drop_duplicates()
+    return [
+        Machine(machine_id=row.machine_id, line=row.line_id)
+        for row in rows.itertuples(index=False)
+    ]
 
 @app.get("/metrics", response_model=list[KpiRow], summary="OEE per machine per bucket")
 def metrics(
@@ -198,7 +201,11 @@ def metrics(
 
     selected = _filter_machine(_readings, machine)
 
-    # TODO(L1): narrow to timestamp >= from_ and <= to, where each one was given
+    if from_ is not None:
+        selected = selected[selected["timestamp"] >= _as_utc(from_)]
+
+    if to is not None:
+        selected = selected[selected["timestamp"] <= _as_utc(to)]
 
     # An empty selection is a fine answer, not an error. Nobody asked a wrong
     # question; there is simply nothing in that window.
