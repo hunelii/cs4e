@@ -15,7 +15,9 @@ requires-python = ">=3.12"
 # uv.lock is written at the same time, and the lock file is what actually makes
 # the environment reproducible.
 dependencies = [
+    "fastapi>=0.141.1",
     "pandas>=2.3.3",
+    "uvicorn>=0.53.0",
 ]
 
 [build-system]
