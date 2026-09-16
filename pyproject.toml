@@ -14,7 +14,9 @@ requires-python = ">=3.12"
 # Add them with `uv add <package>` and let it edit this list for you: that way
 # uv.lock is written at the same time, and the lock file is what actually makes
 # the environment reproducible.
-dependencies = []
+dependencies = [
+    "pandas>=2.3.3",
+]
 
 [build-system]
 requires = ["hatchling"]
@@ -29,3 +31,9 @@ target-version = "py312"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+
+[dependency-groups]
+dev = [
+    "pytest>=9.1.1",
+    "ruff>=0.16.7",
+]
