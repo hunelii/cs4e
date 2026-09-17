@@ -16,7 +16,10 @@ requires-python = ">=3.12"
 # the environment reproducible.
 dependencies = [
     "fastapi>=0.141.1",
+    "httpx>=0.28.1",
     "pandas>=2.3.3",
+    "plotly>=7.1.0",
+    "streamlit>=1.64.0",
     "uvicorn>=0.53.0",
 ]
 

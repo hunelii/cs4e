@@ -1,0 +1,13 @@
+# The chart palette in dashboard/app.py was validated against this exact
+# surface colour. Changing backgroundColor invalidates that check -- re-run the
+# palette validator if you do.
+
+[theme]
+base = "light"
+backgroundColor = "#fcfcfb"
+secondaryBackgroundColor = "#f9f9f7"
+textColor = "#0b0b0b"
+font = "sans serif"
+
+[browser]
+gatherUsageStats = false
