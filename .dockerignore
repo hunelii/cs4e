@@ -1,0 +1,26 @@
+# Everything here would be copied into the image and then never used. A build
+# context that includes .venv/ is slower and produces a bigger image for no
+# reason -- and .venv/ from a Windows host would not even work in Linux.
+
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+
+.git/
+.github/
+
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+data/processed/
+notebooks/
+.ipynb_checkpoints/
+
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

@@ -70,9 +70,7 @@ def test_availability_ignores_setup(sample_readings: pd.DataFrame) -> None:
     minute is being counted as planned production time -- which is a defensible
     model, but not this one, and every downstream number moves with it.
     """
-    # TODO(L2): write the assertion that proves this.
     assert metrics.availability(sample_readings) == pytest.approx(2 / 3)
-
 
 def test_performance_uses_run_time_not_wall_clock(sample_readings: pd.DataFrame) -> None:
     """A machine is only judged on output while it was actually running."""
@@ -130,10 +128,9 @@ def test_quality_across_reject_rates(
 # does line by line -- why it does it that way.
 #
 # Your answer:
-# It is useful as a regression test because the March dataset is fixed and the expected
-# values are known. It is also fragile if the dataset intentionally changes, because the
-# hardcoded values would then need to be updated even if the metric logic is still correct.
-
+# Hardcoding known-good March numbers is intentional here because the test
+# protects important regression values. It is fragile if those numbers are
+# legitimately changed, but that is useful because such a change should be reviewed.
 
 def test_quality_never_exceeds_one_on_clean_data(real_readings: pd.DataFrame) -> None:
     """The 104 % bug, pinned down.
@@ -142,7 +139,6 @@ def test_quality_never_exceeds_one_on_clean_data(real_readings: pd.DataFrame) ->
     Cleaning caps them. If this ever fails, either cleaning regressed or someone
     fed the metrics raw data.
     """
-    # TODO(L2): write the assertion that proves this.
     assert metrics.quality(real_readings) <= 1.0
 
 
@@ -160,6 +156,17 @@ def test_march_numbers_are_stable(real_readings: pd.DataFrame) -> None:
     }
     for machine_id, group in real_readings.groupby("machine_id"):
         assert metrics.oee(group) == pytest.approx(expected[machine_id], abs=5e-5)
+
+
+def test_quality_never_exceeds_one_when_rejections_are_high() -> None:
+    """Quality must never exceed 1 even when rejected units exceed produced."""
+    readings = pd.DataFrame(
+        {
+            "units_produced": [10],
+            "units_rejected": [12],
+        }
+    )
+    assert metrics.quality(readings) <= 1.0
 
 
 # ══ BONUS ══════════════════════════════════════════════════════════════════

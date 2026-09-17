@@ -56,27 +56,6 @@ def test_clean_makes_impossible_counts_possible(real_readings: pd.DataFrame) -> 
     assert real_readings.units_produced.min() >= 0
     assert (real_readings.units_rejected <= real_readings.units_produced).all()
 
-def test_clean_caps_rejected_units_at_produced_units() -> None:
-    """Regression: rejected units must never exceed produced units."""
-    raw = pd.DataFrame(
-        {
-            "timestamp": pd.date_range("2026-03-01", periods=1, freq="1min"),
-            "machine_id": ["M-01"],
-            "line_id": ["A"],
-            "machine_state": ["RUN"],
-            "units_produced": [10],
-            "units_rejected": [12],
-            "temperature_c": [60.0],
-            "vibration_mm_s": [1.0],
-            "power_kw": [20.0],
-            "operator_shift": ["C"],
-        }
-    )
-
-    cleaned = pipeline.clean(raw)
-
-    assert cleaned.units_rejected.iloc[0] == 10
-
 
 def test_clean_leaves_one_row_per_machine_minute(real_readings: pd.DataFrame) -> None:
     duplicated = real_readings.duplicated(subset=["machine_id", "timestamp"])
@@ -120,8 +99,7 @@ def test_resample_preserves_total_units(real_readings: pd.DataFrame) -> None:
     'incomplete' last bucket, any closed/label mismatch shows up here as
     missing units.
     """
-    expected = int(real_readings.units_produced.sum())
-
+    expected = int(real_readings["units_produced"].sum())
     for freq in config.ALLOWED_FREQS:
         table = pipeline.kpi_table(real_readings, freq=freq)
         assert int(table.units_produced.sum()) == expected, f"units lost at freq={freq}"
@@ -133,6 +111,34 @@ def test_resample_preserves_run_minutes(real_readings: pd.DataFrame) -> None:
     for freq in config.ALLOWED_FREQS:
         table = pipeline.kpi_table(real_readings, freq=freq)
         assert int(table.run_minutes.sum()) == expected, f"run time lost at freq={freq}"
+
+
+
+
+def test_clean_caps_rejected_units_at_produced() -> None:
+    """Rejected units cannot exceed produced units after cleaning."""
+    raw = pd.DataFrame(
+        {
+            "machine_id": ["M-01"],
+            "timestamp": ["2026-01-01 00:00:00"],
+            "temperature_c": ["20.0"],
+            "units_produced": [50],
+            "units_rejected": [52],
+        }
+    )
+
+    cleaned = pipeline.clean(raw)
+
+    assert int(cleaned.loc[0, "units_rejected"]) == 50
+
+
+
+
+
+
+
+
+
 
 
 # --- the vectorised table must agree with the scalar functions -----------

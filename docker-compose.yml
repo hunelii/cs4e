@@ -1,0 +1,40 @@
+# Two services, one command.
+#
+#     docker compose up --build
+#     API        http://localhost:8000/docs
+#     Dashboard  http://localhost:8501
+#
+# The interesting line is FACTORYFLOW_API below. The dashboard does not talk to
+# "localhost" -- inside its own container that would mean itself. It talks to
+# "api", which is the service name, and compose resolves it on the private
+# network it created. That is service discovery, and it is most of what an
+# orchestrator does for you.
+
+services:
+  api:
+    build: .
+    ports:
+      - "8000:8000"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import httpx,sys; sys.exit(0 if httpx.get('http://localhost:8000/health').json()['rows_loaded'] else 1)"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+  dashboard:
+    build: .
+    ports:
+      - "8501:8501"
+    environment:
+      FACTORYFLOW_API: http://api:8000
+    depends_on:
+      api:
+        condition: service_healthy
+    command:
+      - streamlit
+      - run
+      - dashboard/app.py
+      - --server.port=8501
+      - --server.address=0.0.0.0
+      - --server.headless=true
